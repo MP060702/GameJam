@@ -7,7 +7,9 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
     public Camera MainCamera { get; private set; }
 
-    public Grid grid;
+    public GridSystem grid;
+
+    public Vector3 MousePos => Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
     void Awake()
     {
         if (Instance == null) Instance = this;
