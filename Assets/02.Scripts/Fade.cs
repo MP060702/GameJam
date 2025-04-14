@@ -24,20 +24,7 @@ public class Fade : MonoBehaviour
             .SetAutoKill(false)
             .Pause();
     }
-
-    public void SetAbleColor(bool isAllowed)
-    {
-        if (isAllowed && _lastColor != ableColor)
-        {
-            _lastColor = ableColor;
-            _fadeTween.ChangeEndValue(ableColor);
-        }
-        else if (!isAllowed && _lastColor != unableColor)
-        {
-            _lastColor = unableColor;
-            _fadeTween.ChangeEndValue(unableColor);
-        }
-    }
+    
 
     public void CheakAndPlayFading()
     {

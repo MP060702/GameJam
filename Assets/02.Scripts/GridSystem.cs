@@ -1,91 +1,125 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using UnityEngine;
 
-
+public enum SlotColor
+{
+    Able,
+    Unable,
+    None
+}
 public class Slot
 {
     public GameObject SlotObj;
-    
+
     public Slot ParentSlot;
     public List<Slot> ChildSlot = new List<Slot>();
-    public Fade Fade;//임시
-    
+    public SpriteRenderer SpriteRenderer;
+    public Color Color
+    {
+        get => SpriteRenderer.color;
+        set => SpriteRenderer.color = value;
+    }
+
     public bool IsEmpty => ParentSlot == null || ChildSlot.Count == 0;
+    public bool Disable = false;
+    public bool SelectFlag = false;
 }
 
 
 public class GridSystem : MonoBehaviour
 {
-    public Vector3 OffSet => transform.position;
-    
-    public RectInt gridRange;
+    public Vector3 RectOffSet => transform.position;
+
+    public RectInt gridBounds;
 
     public Slot[,] Grids;
 
     public GameObject slotObj;
     private SpriteRenderer _spriteRenderer;
+    private List<Vector2Int> _lastSelectSlots = new();
+    private bool _isSetAble;
+
     void Start()
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
 
-        gridRange = new RectInt(0, 0, (int)_spriteRenderer.size.x, (int)_spriteRenderer.size.y);
-        
-        Grids = new Slot[gridRange.xMax, gridRange.yMax];
-        for (int x = 0; x < gridRange.xMax; x++)
+        gridBounds = new RectInt(0, 0, (int)_spriteRenderer.size.x, (int)_spriteRenderer.size.y);
+
+        Grids = new Slot[gridBounds.xMax, gridBounds.yMax];
+        for (int x = 0; x < gridBounds.xMax; x++)
         {
-            for (int y = 0; y < gridRange.yMax; y++)
+            for (int y = 0; y < gridBounds.yMax; y++)
             {
                 Slot instance = Grids[x, y] = new Slot();
                 instance.SlotObj = Instantiate(slotObj, transform);
-                instance.SlotObj.transform.position = new Vector3(x, y, -0.1f);
-                instance.Fade = instance.SlotObj.GetComponent<Fade>();
+                instance.SlotObj.transform.localPosition = new Vector3(x, y, -0.1f);
+                instance.SpriteRenderer = instance.SlotObj.GetComponent<SpriteRenderer>();
             }
         }
     }
 
-    public bool TrySetSlot(Vector3 target, List<Vector2Int> childSlots, out Vector3 outputPos)
+    public Vector3 SetSlot(Vector3 target, List<Vector2Int> childSlots)
     {
-        Vector3Int temp = Vector3Int.RoundToInt(target-OffSet);
-        outputPos = temp + OffSet;
+        SetSlotColor(SlotColor.None);
 
-        bool isMatching = gridRange.Contains((Vector2Int)temp);
+        Vector3Int temp = Vector3Int.RoundToInt(target - RectOffSet);
 
-        if (isMatching)
+        foreach (Vector2Int childSlot in childSlots)
         {
-            foreach (Vector2Int childSlot in childSlots)
-            {
-                Grids[temp.x + childSlots[0].x, temp.y + childSlots[0].y].ChildSlot.Add(Grids[temp.x + childSlot.x, temp.y + childSlot.y]);
+            Grids[temp.x + childSlots[0].x, temp.y + childSlots[0].y].ChildSlot
+                .Add(Grids[temp.x + childSlot.x, temp.y + childSlot.y]);
             
-                Grids[temp.x + childSlot.x, temp.y + childSlot.y].ParentSlot =
-                    Grids[temp.x + childSlots[0].x, temp.y + childSlots[0].y];
-            }
+            Grids[temp.x + childSlot.x, temp.y + childSlot.y].ParentSlot =
+                Grids[temp.x + childSlots[0].x, temp.y + childSlots[0].y];
+            
         }
-        
-        return isMatching;
+
+        return temp + RectOffSet;
     }
 
-    public void FadeSlot(Vector3 target,bool isAllowed)
+    public void UnSetSlot(Vector3 target, List<Vector2Int> childSlots)
     {
-        Debug.Log("FadeSlot");
-        Vector3Int temp = Vector3Int.RoundToInt(target-OffSet);
-        if(CheckGridBounds(temp))
+        Vector3Int temp = Vector3Int.RoundToInt(target - RectOffSet);
+
+        foreach (Vector2Int childSlot in childSlots)
         {
-            Grids[temp.x, temp.y].Fade.SetAbleColor(isAllowed);
-            Grids[temp.x, temp.y].Fade.CheakAndPlayFading();
+            Grids[temp.x + childSlots[0].x, temp.y + childSlots[0].y].ChildSlot.Clear();
+
+            Grids[temp.x + childSlot.x, temp.y + childSlot.y].ParentSlot = null;
         }
 
     }
 
-    public bool CheckGridBounds(Vector3Int target)
+    public bool CheckBoundAndFade(Vector3 target, List<Vector2Int> childSlots)
     {
-        return 0 <= target.x && target.x < Grids.GetLength(0) && 0 <= target.y && target.y < Grids.GetLength(1);
-    }
-    public bool CheckGridBounds(Vector3 target)
-    {        
-        Vector3Int temp = Vector3Int.RoundToInt(target-OffSet);
-        bool isInRange = 0 <= temp.x && temp.x < Grids.GetLength(0) && 0 <= temp.y && temp.y < Grids.GetLength(1);
+        SetSlotColor(SlotColor.None);
+            
+        Vector3Int offsetTarget = Vector3Int.RoundToInt(target - RectOffSet);
 
-        return  isInRange && Grids[temp.x, temp.y].ParentSlot == null;
+        childSlots = childSlots.Select(x => x + (Vector2Int)offsetTarget).ToList();
+
+        _isSetAble = childSlots.All(x => gridBounds.Contains(x) && Grids[x.x, x.y].ParentSlot == null);
+
+        _lastSelectSlots = childSlots.Where(x=>gridBounds.Contains(x)).ToList();
+
+        SetSlotColor(_isSetAble ? SlotColor.Able : SlotColor.Unable);
+
+        return _isSetAble;
+    }
+
+    public void SetSlotColor(SlotColor slotColor)
+    {
+        _lastSelectSlots.ForEach(x =>
+        {
+            Grids[x.x, x.y].Color = slotColor switch
+            {
+                SlotColor.Able => Color.green,
+                SlotColor.Unable => Color.red,
+                SlotColor.None => Color.clear
+            };
+        });
     }
 }

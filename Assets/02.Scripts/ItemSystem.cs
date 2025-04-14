@@ -12,6 +12,7 @@ public class ItemSystem : MonoBehaviour
     private Vector3 Pos => transform.position;
     
     private Vector3 _lastMousePos;
+    private bool _onGrid = false;
 
 
     private void Start()
@@ -25,51 +26,45 @@ public class ItemSystem : MonoBehaviour
     public void OnMouseDown()
     {
         _startPos = Pos;
+        if(_onGrid) GameManager.Instance.grid.UnSetSlot(Pos, itemSO.childSlots);
     }
 
     public void OnMouseDrag()
     {
+        #region 마우스 위치로 아이템 이동
         Vector3 centerPos = GameManager.Instance.MousePos - (Vector3)_spriteCenter;
         centerPos.z = Pos.z;
         transform.position = centerPos;
+        #endregion
 
-        if (GetMouseSpeed() < 10f)
-        {
 
-            bool isAllowed = true;
-
-            foreach (Vector2 childPos in itemSO.childSlots)
-            {
-
-                if (GameManager.Instance.grid.CheckGridBounds(Pos+(Vector3)childPos) == false)
-                    isAllowed = false;
-            }
-
-            foreach (Vector2 childPos in itemSO.childSlots)
-            {
-                GameManager.Instance.grid.FadeSlot(Pos+(Vector3)childPos,isAllowed);
-
-            }
-        }
+        GameManager.Instance.grid.CheckBoundAndFade(Pos, itemSO.childSlots);
     }
 
     public void OnMouseUp()
     {
-        if (GameManager.Instance.grid.TrySetSlot(Pos,itemSO.childSlots, out Vector3 output))
+        if (GameManager.Instance.grid.CheckBoundAndFade(Pos, itemSO.childSlots))
         {
-            transform.position = output;
+            _onGrid = true;
+            transform.position = GameManager.Instance.grid.SetSlot(Pos, itemSO.childSlots);
         }
-        else transform.position = _startPos;
+        else
+        {
+            transform.position = _startPos;
+            if(_onGrid) transform.position = GameManager.Instance.grid.SetSlot(Pos, itemSO.childSlots);
+        }
     }
 
-    private float GetMouseSpeed()
-    {
-        Vector3 currentMousePos = Input.mousePosition;
-        float distance = Vector3.Distance(currentMousePos, _lastMousePos);
-
-        _lastMousePos = currentMousePos;
-        return distance / Time.deltaTime;
-    }
+    
+    //현재 사용되지 않음
+    // private float GetMouseSpeed()
+    // {
+    //     Vector3 currentMousePos = Input.mousePosition;
+    //     float distance = Vector3.Distance(currentMousePos, _lastMousePos);
+    //
+    //     _lastMousePos = currentMousePos;
+    //     return distance / Time.deltaTime;
+    // }
 
 
 
