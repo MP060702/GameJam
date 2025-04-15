@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -14,6 +12,8 @@ public class Slot
 {
     public GameObject SlotObj;
 
+    public Item InItemObj;
+    
     public Slot ParentSlot;
     public List<Slot> ChildSlot = new List<Slot>();
     public SpriteRenderer SpriteRenderer;
@@ -22,10 +22,15 @@ public class Slot
         get => SpriteRenderer.color;
         set => SpriteRenderer.color = value;
     }
+    
+    public void Clear()
+    {
+        ChildSlot.Clear();
+        ParentSlot = null;
+    }
 
-    public bool IsEmpty => ParentSlot == null || ChildSlot.Count == 0;
+    public bool IsEmpty => ParentSlot == null;
     public bool Disable = false;
-    public bool SelectFlag = false;
 }
 
 
@@ -61,11 +66,13 @@ public class GridSystem : MonoBehaviour
         }
     }
 
-    public Vector3 SetSlot(Vector3 target, List<Vector2Int> childSlots)
+    public Vector3 SetSlot(Vector3 target, List<Vector2Int> childSlots, Item itemInfo)
     {
         SetSlotColor(SlotColor.None);
 
         Vector3Int temp = Vector3Int.RoundToInt(target - RectOffSet);
+
+        Grids[temp.x + childSlots[0].x, temp.y + childSlots[0].y].InItemObj = itemInfo;
 
         foreach (Vector2Int childSlot in childSlots)
         {
@@ -76,7 +83,6 @@ public class GridSystem : MonoBehaviour
                 Grids[temp.x + childSlots[0].x, temp.y + childSlots[0].y];
             
         }
-
         return temp + RectOffSet;
     }
 
@@ -86,7 +92,7 @@ public class GridSystem : MonoBehaviour
 
         foreach (Vector2Int childSlot in childSlots)
         {
-            Grids[temp.x + childSlots[0].x, temp.y + childSlots[0].y].ChildSlot.Clear();
+            Grids[temp.x + childSlots[0].x, temp.y + childSlots[0].y].Clear();
 
             Grids[temp.x + childSlot.x, temp.y + childSlot.y].ParentSlot = null;
         }
@@ -101,7 +107,7 @@ public class GridSystem : MonoBehaviour
 
         childSlots = childSlots.Select(x => x + (Vector2Int)offsetTarget).ToList();
 
-        _isSetAble = childSlots.All(x => gridBounds.Contains(x) && Grids[x.x, x.y].ParentSlot == null);
+        _isSetAble = childSlots.All(x => gridBounds.Contains(x) && Grids[x.x, x.y].IsEmpty);
 
         _lastSelectSlots = childSlots.Where(x=>gridBounds.Contains(x)).ToList();
 

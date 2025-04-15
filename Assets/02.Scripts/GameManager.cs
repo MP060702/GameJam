@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using SymptomSystem;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -25,8 +27,15 @@ public class GameManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public void ItemSubmit()
     {
+        SymptomTag itemEffect = SymptomTag.None;
+        foreach (Slot i in grid.Grids)
+        {
+            if (!i.IsEmpty)
+                itemEffect = itemEffect.Add(i.ParentSlot.InItemObj.tag);
+        }
         
+        Debug.Log(itemEffect);
     }
 }

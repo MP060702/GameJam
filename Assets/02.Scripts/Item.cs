@@ -5,7 +5,7 @@ using UnityEngine;
 public class Item : ScriptableObject
 {
     public Sprite itemSprite;
-    public int tag; //임시
+    public SymptomTag tag; //임시
     public List<Vector2Int> childSlots = new List<Vector2Int>();
 
 }
