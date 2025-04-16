@@ -38,11 +38,13 @@ public class GridSystem : MonoBehaviour
 {
     public Vector3 RectOffSet => transform.position;
 
-    public RectInt gridBounds;
 
     public Slot[,] Grids;
+    public Rect storageBounds;
 
     public GameObject slotObj;
+    
+    private RectInt _gridBounds;
     private SpriteRenderer _spriteRenderer;
     private List<Vector2Int> _lastSelectSlots = new();
     private bool _isSetAble;
@@ -51,12 +53,12 @@ public class GridSystem : MonoBehaviour
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
 
-        gridBounds = new RectInt(0, 0, (int)_spriteRenderer.size.x, (int)_spriteRenderer.size.y);
+        _gridBounds = new RectInt(0, 0, (int)_spriteRenderer.size.x, (int)_spriteRenderer.size.y);
 
-        Grids = new Slot[gridBounds.xMax, gridBounds.yMax];
-        for (int x = 0; x < gridBounds.xMax; x++)
+        Grids = new Slot[_gridBounds.xMax, _gridBounds.yMax];
+        for (int x = 0; x < _gridBounds.xMax; x++)
         {
-            for (int y = 0; y < gridBounds.yMax; y++)
+            for (int y = 0; y < _gridBounds.yMax; y++)
             {
                 Slot instance = Grids[x, y] = new Slot();
                 instance.SlotObj = Instantiate(slotObj, transform);
@@ -99,7 +101,7 @@ public class GridSystem : MonoBehaviour
 
     }
 
-    public bool CheckBoundAndFade(Vector3 target, List<Vector2Int> childSlots)
+    public bool CheckGridBound(Vector3 target, List<Vector2Int> childSlots)
     {
         SetSlotColor(SlotColor.None);
             
@@ -107,13 +109,19 @@ public class GridSystem : MonoBehaviour
 
         childSlots = childSlots.Select(x => x + (Vector2Int)offsetTarget).ToList();
 
-        _isSetAble = childSlots.All(x => gridBounds.Contains(x) && Grids[x.x, x.y].IsEmpty);
+        _isSetAble = childSlots.All(x => _gridBounds.Contains(x) && Grids[x.x, x.y].IsEmpty);
 
-        _lastSelectSlots = childSlots.Where(x=>gridBounds.Contains(x)).ToList();
+        _lastSelectSlots = childSlots.Where(x=>_gridBounds.Contains(x)).ToList();
 
         SetSlotColor(_isSetAble ? SlotColor.Able : SlotColor.Unable);
-
         return _isSetAble;
+    }
+
+    public bool CheckStorageBound(Vector3 target, List<Vector2Int> childSlots)
+    {
+        List<Vector2> normalizeList = childSlots.Select(v => v+(Vector2)target).ToList();
+
+        return normalizeList.All(x => storageBounds.Contains(x));
     }
 
     public void SetSlotColor(SlotColor slotColor)

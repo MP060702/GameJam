@@ -1,14 +1,21 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using cmdwtf.UnityTools.Dynamics;
+using DG.Tweening;
 using UnityEngine;
 
 public class ItemSystem : MonoBehaviour
 {
     public Item itemSO;
+    [SerializeField] private float dampingPower = 10;
+    [SerializeField] private float followSpeed = 1;
     private SpriteRenderer _spriteRenderer;
     private Vector2 _spriteCenter;
     private Vector3 _startPos;
     private Vector3 Pos => transform.position;
+    private FollowPoint _followPoint;
+    private DynamicsTransform _dynamicsTransform;
     
     
     //로직 선택 미스로 인한 하드코딩
@@ -16,7 +23,6 @@ public class ItemSystem : MonoBehaviour
     private int RotateState => (int)transform.rotation.eulerAngles.z;
     
     
-    private Vector3 _lastMousePos;
     private bool _onGrid = false;
 
 
@@ -24,8 +30,9 @@ public class ItemSystem : MonoBehaviour
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _spriteCenter = _spriteRenderer.size/2;
-        _lastMousePos = Input.mousePosition;
-
+        _followPoint = GameManager.Instance.followPoints.GetComponent<FollowPoint>();
+        _dynamicsTransform = GetComponent<DynamicsTransform>();
+        _dynamicsTransform.SetTarget(GameManager.Instance.followPoints);
     }
     
     public void OnMouseDown()
@@ -33,35 +40,72 @@ public class ItemSystem : MonoBehaviour
         _startPos = Pos;
         //레이어(z축) 변경 => 이동 중에 다른 모든 아이템보다 위에 렌더링
         transform.position -= Vector3.forward/10;
+
+        _followPoint.Move(GameManager.Instance.MousePos-Pos);
+        _dynamicsTransform.ResetDynamics();
+        _dynamicsTransform.enabled = true;
         
         if (_onGrid)  GameManager.Instance.grid.UnSetSlot(Pos, TestRotateChildSlot);
+
+        transform.DOScale(Vector3.one * 1.2f, 0.04f).SetEase(Ease.OutBack).OnComplete(() =>
+            transform.DOScale(Vector3.one, 0.25f).SetEase(Ease.OutBack));
     }
 
     public void OnMouseDrag()
     {
-        GameManager.Instance.grid.CheckBoundAndFade(Pos, TestRotateChildSlot);
+        
+        GameManager.Instance.grid.CheckGridBound(Pos, TestRotateChildSlot);
 
-        if (Input.mouseScrollDelta.y > 0)
-        {
-            transform.Rotate(0,0,90);
-        }else if (Input.mouseScrollDelta.y < 0)
-        {
-            transform.Rotate(0,0,-90);
-            
-        }
 
         
-        #region 마우스 위치로 아이템 이동
-        Vector3 centerPos = GameManager.Instance.MousePos - (Vector3)RotatePoints(_spriteCenter,RotateState);
-        centerPos.z = Pos.z;
-        transform.position = centerPos;
-        #endregion
-
+        if (Input.mouseScrollDelta.y > 0 || Input.mouseScrollDelta.y < 0)
+        {
+            transform.Rotate(0, 0, 90 * Mathf.Abs(Input.mouseScrollDelta.y));
+            FollowPointUpdate();
+            _dynamicsTransform.ResetDynamics();
+        }
+        else
+        {
+            FollowPointUpdate();
+        }
 
     }
     
+    public void OnMouseUp()
+    {
+
+        Vector3 targetPos;
+        //-2.1인 z축 -2로 레이어 원상복구
+        transform.position += Vector3.forward/10;
+        if (GameManager.Instance.grid.CheckGridBound(Pos, TestRotateChildSlot))
+        {
+            _onGrid = true;
+            targetPos = GameManager.Instance.grid.SetSlot(Pos, TestRotateChildSlot,itemSO);
+        }
+        else if (GameManager.Instance.grid.CheckStorageBound(Pos, TestRotateChildSlot))
+        {
+            targetPos = Pos;
+            _onGrid = false;
+        }else
+        {
+            targetPos = _startPos;
+            GameManager.Instance.grid.SetSlotColor(SlotColor.None);
+            if(_onGrid) targetPos = GameManager.Instance.grid.SetSlot(targetPos, TestRotateChildSlot,itemSO);
+        }
+
+        _dynamicsTransform.enabled = false;
+        
+        transform.DOMove(targetPos, 0.15f).SetEase(Ease.OutQuart);
+    }
+
+    private void FollowPointUpdate()
+    {
+        Vector3 centerPos = RotatePoints(_spriteCenter,RotateState);
+        _followPoint.Move(centerPos);
+    }
+    
     //로직 선택 미스로 인한 하드코딩2
-    public Vector3 RotatePoints(Vector3 point, int angle)
+    private Vector3 RotatePoints(Vector3 point, int angle)
     {
         // 0 ~ 360 정규화
 
@@ -75,7 +119,7 @@ public class ItemSystem : MonoBehaviour
     
         return rotatedDir;
     }
-    public Vector2Int RotatePoints(Vector2Int point, int angle)
+    private Vector2Int RotatePoints(Vector2Int point, int angle)
     {
         // 0 ~ 360 정규화
 
@@ -90,24 +134,6 @@ public class ItemSystem : MonoBehaviour
         return rotatedDir;
     }
 
-    public void OnMouseUp()
-    {
-        //레이어 원상복구
-        transform.position += Vector3.forward/10;
-        if (GameManager.Instance.grid.CheckBoundAndFade(Pos, TestRotateChildSlot))
-        {
-            _onGrid = true;
-            transform.position = GameManager.Instance.grid.SetSlot(Pos, TestRotateChildSlot,itemSO);
-        }
-        else
-        {
-            transform.position = _startPos;
-            GameManager.Instance.grid.SetSlotColor(SlotColor.None);
-            if(_onGrid) transform.position = GameManager.Instance.grid.SetSlot(Pos, TestRotateChildSlot,itemSO);
-        }
-    }
-
-    
     //현재 사용되지 않음
     // private float GetMouseSpeed()
     // {
@@ -117,7 +143,4 @@ public class ItemSystem : MonoBehaviour
     //     _lastMousePos = currentMousePos;
     //     return distance / Time.deltaTime;
     // }
-
-
-
 }

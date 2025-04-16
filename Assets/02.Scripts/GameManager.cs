@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public GridSystem grid;
 
     public Vector3 MousePos => Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
+    public Transform followPoints;
     void Awake()
     {
         if (Instance == null) Instance = this;
