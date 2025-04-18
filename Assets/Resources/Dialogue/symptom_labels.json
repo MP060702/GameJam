@@ -1,0 +1,8 @@
+{
+    "labels": [
+      { "key": "Dizzy", "value": "빙글빙글" },
+      { "key": "Prickly", "value": "따끔따끔" },
+      { "key": "Tickling", "value": "간질간질" },
+      { "key": "Sneezing", "value": "재채기 와르르" }
+    ]
+  }
