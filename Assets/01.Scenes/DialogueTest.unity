@@ -338,7 +338,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 528094749}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.905441
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -839,7 +839,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9666f4b16a116ba489efc5f0261585c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Toggle: {fileID: 0}
+  Toggle: {fileID: 219563926}
   SymptomName: 
 --- !u!1 &239923952
 GameObject:
@@ -940,7 +940,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9666f4b16a116ba489efc5f0261585c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Toggle: {fileID: 0}
+  Toggle: {fileID: 239923954}
   SymptomName: 
 --- !u!1 &246850883
 GameObject:
@@ -1391,7 +1391,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9666f4b16a116ba489efc5f0261585c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Toggle: {fileID: 0}
+  Toggle: {fileID: 568751138}
   SymptomName: 
 --- !u!1 &605888501
 GameObject:
@@ -1998,7 +1998,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9666f4b16a116ba489efc5f0261585c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Toggle: {fileID: 0}
+  Toggle: {fileID: 825065224}
   SymptomName: 
 --- !u!1 &830884403
 GameObject:
@@ -2119,7 +2119,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.00002959012}
+  m_AnchoredPosition: {x: 0, y: 0.00025588818}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &872977537
@@ -2549,7 +2549,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9666f4b16a116ba489efc5f0261585c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Toggle: {fileID: 0}
+  Toggle: {fileID: 982380922}
   SymptomName: 
 --- !u!1 &1040077413
 GameObject:
@@ -3785,7 +3785,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9666f4b16a116ba489efc5f0261585c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Toggle: {fileID: 0}
+  Toggle: {fileID: 1506778084}
   SymptomName: 
 --- !u!1 &1568471293
 GameObject:
@@ -4036,7 +4036,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9666f4b16a116ba489efc5f0261585c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Toggle: {fileID: 0}
+  Toggle: {fileID: 1787374953}
   SymptomName: 
 --- !u!1 &1877278451
 GameObject:
@@ -4519,7 +4519,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9666f4b16a116ba489efc5f0261585c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Toggle: {fileID: 0}
+  Toggle: {fileID: 1909463327}
   SymptomName: 
 --- !u!1 &1937696084
 GameObject:

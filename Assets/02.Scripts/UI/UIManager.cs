@@ -36,14 +36,20 @@ public class UIManager : MonoBehaviour
     {
         // 화자 이름 출력
         if (SpeakerText != null)
+        {
+            Debug.Log($"[UI] 화자 이름 설정: {speaker}");
             SpeakerText.text = speaker;
+        }
     }
 
     public void SetDialogue(string text)
     {
         // 대사 내용 출력
         if (DialogueText != null)
+        {
+            Debug.Log($"[UI] 대사 텍스트 설정: {text}");
             DialogueText.text = text;
+        }
     }
 
     public void ClearChoices()
